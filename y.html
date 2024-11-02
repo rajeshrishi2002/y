@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solluu</title>
+    <link rel="icon" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <style>
+        /* Your existing styles... */
+
+        .video-call-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000; /* Ensure it overlays above other elements */
+        }
+        .video-player {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0; /* Background video */
+        }
+        .user-video-frame {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 35vw; /* Increased size */
+    height: auto;
+    border: 4px solid white; /* Slightly thicker border for distinction */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.7); /* More pronounced shadow */
+    z-index: 10; /* Ensure it’s above the video */
+    overflow: hidden; /* Ensure content stays within rounded corners */
+}
+
+        .end-call-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: red;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 1001; /* Above everything else */
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex items-center p-2">
+        <input class="flex-1 p-2 rounded-full" id="messageInput" placeholder="Solluu..." type="text">
+        <i class="fas fa-paper-plane send-icon" id="sendButton"></i>
+        <i class="fas fa-video video-call-icon" id="videoCallButton" style="font-size: 24px; cursor: pointer;"></i> <!-- Video Call Icon -->
+    </div>
+
+    <div class="video-call-overlay" id="videoCallOverlay">
+        <video class="video-player" id="backgroundVideo" autoplay loop muted>
+            <source src="d.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <video class="user-video-frame" id="userVideo" autoplay muted playsinline></video>
+        <div class="end-call-button" id="endCallButton">End Call</div>
+    </div>
+
+    <script>
+        const videoCallButton = document.getElementById('videoCallButton');
+        const videoCallOverlay = document.getElementById('videoCallOverlay');
+        const endCallButton = document.getElementById('endCallButton');
+        const userVideo = document.getElementById('userVideo');
+        const backgroundVideo = document.getElementById('backgroundVideo'); // Reference to the background video
+    
+        videoCallButton.addEventListener('click', () => {
+            videoCallOverlay.style.display = 'block'; // Show overlay
+            startVideoCall(); // Start video call logic
+        });
+    
+        endCallButton.addEventListener('click', () => {
+            videoCallOverlay.style.display = 'none'; // Hide overlay
+            stopVideoCall(); // Stop video call logic
+        });
+    
+        function startVideoCall() {
+            // Reset video to start from the beginning
+            backgroundVideo.currentTime = 0;
+            backgroundVideo.play(); // Ensure the background video starts playing
+            
+            // Request camera access and start video
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    userVideo.srcObject = stream;
+                })
+                .catch(error => {
+                    console.error('Error accessing media devices.', error);
+                });
+        }
+    
+        function stopVideoCall() {
+            const stream = userVideo.srcObject;
+            if (stream) {
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+            userVideo.srcObject = null; // Clear video feed
+            backgroundVideo.pause(); // Pause background video when ending the call
+        }
+    </script>
+    
+    
+</body>
+</html>
